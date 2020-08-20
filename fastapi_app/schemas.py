@@ -8,6 +8,7 @@ class UserBase(BaseModel):
     email: str
     first_name: str
     last_name: str
+    roles: List[Role]
     dob: Optional[date] = None
 
 class UserCreate(UserBase):
@@ -16,7 +17,6 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     is_active: bool
-    roles: List[Role]
     class Config:
         orm_mode = True
 
