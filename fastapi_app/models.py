@@ -17,7 +17,7 @@ class Role(enum.Enum):
 
 #db models
 class User(Base):
-    __tablename__: 'users'
+    __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
     roles = Column(EnumListType(Role, int))
     first_name = Column(Unicode(50))
