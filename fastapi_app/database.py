@@ -10,8 +10,7 @@ from sqlalchemy.pool import NullPool
 load_dotenv()
 # db_username = os.environ.get('DB_USERNAME')
 # db_password = os.environ.get('DB_PASSWORD')
-db_username = 'karl'
-db_password = 'a504202A!'
+
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 # SQLALCHEMY_DATABASE_URL= 'sqlite:///' + os.path.join(basedir, 'freemind.db')
