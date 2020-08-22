@@ -22,11 +22,11 @@ class User(Base):
     roles = Column(EnumListType(Role, int))
     first_name = Column(Unicode(50))
     last_name = Column(Unicode(50))
-    email = Column(EmailType)
+    email = Column(String)
     password = Column(PasswordType(schemes=[
-            'pbkdf2_sha512',
-            'md5_crypt'
-        ]))
+        'pbkdf2_sha512',
+        'md5_crypt'
+    ]))
     # password = Column(PasswordType)
     dob = Column(Date)
     is_active = Column(Boolean, default=True)

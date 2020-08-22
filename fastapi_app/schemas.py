@@ -1,11 +1,15 @@
 from typing import List, Optional
+
+from sqlalchemy_utils import EmailType
+
 from .models import Role
 from datetime import date
 
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+
 
 class UserBase(BaseModel):
-    email: str
+    email: EmailStr
     first_name: str
     last_name: str
     roles: List[Role]
