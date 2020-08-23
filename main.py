@@ -14,7 +14,11 @@ import database
 models.database.Base.metadata.create_all(bind=database.engine)
 
 webbrowser.open('http://localhost:8000')
-app = FastAPI()
+app = FastAPI(
+    title="bakasana",
+    version="0.0.1",
+    description="free webapp/api for operating yoga studios."
+)
 
 
 def get_db():
