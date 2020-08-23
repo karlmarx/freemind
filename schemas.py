@@ -3,7 +3,7 @@ from typing import List, Optional
 from sqlalchemy_utils import EmailType
 
 # from models import Role
-from datetime import date
+from datetime import date, time, timedelta
 from enum import Enum, IntEnum
 
 from pydantic import BaseModel, EmailStr
@@ -26,6 +26,7 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str
 
+
 class User(UserBase):
     id: int
     is_active: bool
@@ -33,6 +34,30 @@ class User(UserBase):
     class Config:
         orm_mode = True
         use_enum_values = True
+
+
+class ClassBase(BaseModel):
+    # TODO: make a configurable default for this and maybe store in a table?
+    classSize: int
+    waitlistSize: Optional[int] = 0
+    name: str
+    description: Optional[str] = ""
+
+
+class ClassCreate(ClassBase):
+    pass
+
+
+class Class(ClassBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+
+class ScheduledClass(BaseModel):
+    startTime: time
+    duration: Optional[timedelta] = timedelta(minutes=60)
 
     """
     roles : List(Role)
