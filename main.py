@@ -23,7 +23,7 @@ app = FastAPI(
     version="0.0.1",
     description="free webapp/api for operating yoga studios."
 )
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="app/static")
 
 templates = Jinja2Templates(directory="templates")
 

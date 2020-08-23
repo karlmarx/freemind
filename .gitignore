@@ -12,3 +12,4 @@ credentials.json
 __pycache__/
 app.standard.yaml
 docker-compose.yml
+creds.json
