@@ -1,8 +1,7 @@
 from pydantic import EmailStr
 from sqlalchemy.orm import Session
-from . import models, schemas
-from sqlalchemy_enum_list import EnumListType
-from sqlalchemy_utils import EmailType, PasswordType
+import schemas
+import models
 
 
 def get_user(db: Session, user_id: int):

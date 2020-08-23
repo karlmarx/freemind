@@ -1,0 +1,7 @@
+runtime: python37
+entrypoint: gunicorn main:app  -w 4 -k uvicorn.workers.UvicornWorker --timeout 120  -b :$PORT
+env_variables:
+  DB_USER: "karl"
+  DB_PASS: "a504202A!"
+  DB_NAME: "freemind"
+  CLOUD_SQL_CONNECTION_NAME: "eighth-orbit-287212:us-east4:freemind"

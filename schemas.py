@@ -2,11 +2,19 @@ from typing import List, Optional
 
 from sqlalchemy_utils import EmailType
 
-from .models import Role
+# from models import Role
 from datetime import date
+from enum import Enum, IntEnum
 
 from pydantic import BaseModel, EmailStr
 
+
+class Role(str, Enum):
+    owner = "owner"
+    admin = "admin"
+    teacher = "teacher"
+    staff = "staff"
+    student = "student"
 
 class UserBase(BaseModel):
     email: EmailStr
@@ -21,8 +29,10 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     is_active: bool
+
     class Config:
         orm_mode = True
+        use_enum_values = True
 
     """
     roles : List(Role)
