@@ -5,6 +5,8 @@
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet"
           href="https://fonts.googleapis.com/css?family=Allerta+Stencil">
+    <link rel="stylesheet" href="{{ url_for('static', path='/style.css') }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', path='/favicon.ico') }}">
     <style>
         .w3-allerta {
             font-family: 'Allerta Stencil', serif;
@@ -18,7 +20,9 @@
     {% endfor %}
 </ul>
 <br><br>
-<a href="http://www.karlmarxindustries.com"><./img/transparentwhitebig.png}" width="200px"></a>
+<div style="text-align: center; font-size: 120%;"><a href="http://www.karlmarxindustries.com"><img
+        src="{{ url_for('static', path='/transparentwhitebig.png') }}" width="200px"></a></div>
+
 {# a comment #}
 </body>
 </html>
