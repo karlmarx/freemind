@@ -1,23 +1,24 @@
 import webbrowser
 from typing import List
+import os
 
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy_utils import EmailType, PasswordType
-from sqlalchemy_enum_list import EnumListType
 
-from . import crud, models, schemas
-from .database import SessionLocal, engine
+import crud
+import schemas
+import models
+import database
 
-models.Base.metadata.create_all(bind=engine)
+models.database.Base.metadata.create_all(bind=database.engine)
 
 webbrowser.open('http://localhost:8000')
 app = FastAPI()
 
 
 def get_db():
-    db = SessionLocal()
+    db = database.SessionLocal()
     try:
         yield db
     finally:

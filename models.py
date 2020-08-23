@@ -5,21 +5,15 @@ from sqlalchemy.orm import relationship
 from sqlalchemy_enum_list import EnumListType
 from sqlalchemy_utils import EmailType, PasswordType
 from sqlalchemy.orm import relationship
-from .database import Base
+import database
+from schemas import Role
 
 
-class Role(enum.Enum):
-    owner = 0
-    admin = 1
-    teacher = 2
-    staff = 3
-    student = 4
-
-#db models
-class User(Base):
+# db models
+class User(database.Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
-    roles = Column(EnumListType(Role, int))
+    roles = Column(EnumListType(Role, str))
     first_name = Column(Unicode(50))
     last_name = Column(Unicode(50))
     email = Column(String)
