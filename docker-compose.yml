@@ -9,15 +9,19 @@ services:
     depends_on:
       - cloud-sql-proxy
     volumes:
-      - .:/fast_api/app
+      - .:/app
     env_file:
       - .env
     environment:
       DATABASEURL: postgresql://${DB_USERNAME}:${DB_PASSWORD}@127.0.0.1:5432/freemind'
+      DB_USER: karl
+      DB_PASS: a504202A!
+      DB_NAME: freedmind
+      DB_HOST: 127.0.0.1:5433
   cloud-sql-proxy:
     image: gcr.io/cloudsql-docker/gce-proxy:1.11
     # Port: MySQL (3306), PostgreSQL (5433)
-    command: /cloud_sql_proxy -instances=eighth-orbit-287212:us-east4:freemind=tcp:127.0.0.1:5432 -credential_file=/secrets/cloudsql/credentials.json
+    command: /cloud_sql_proxy -instances=eighth-orbit-287212:us-east4:freemind=tcp:127.0.0.1:5433 -credential_file=/secrets/cloudsql/credentials.json
     volumes:
       # this mounts your application default credential on the container, preventing the
       # 'invalid json file "/config": google: read JWT from JSON credentials: 'type' field is "authorized_user" (expected "service_account")'

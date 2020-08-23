@@ -1,2 +1,14 @@
 /venv/
 *.env
+credentials.json
+.idea/dataSources.local.xml
+.idea/dataSources.xml
+.idea/dataSources/
+.idea/freemind.iml
+.idea/inspectionProfiles/
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+__pycache__/
+app.standard.yaml
+docker-compose.yml
