@@ -3,7 +3,12 @@ from typing import List
 import os
 
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException
+import random
+from fastapi import Depends, FastAPI, HTTPException, Request
+from starlette.templating import Jinja2Templates
+from starlette.staticfiles import StaticFiles
+from starlette.responses import HTMLResponse
+import aiofiles
 from sqlalchemy.orm import Session
 
 import crud
@@ -13,12 +18,14 @@ import database
 
 models.database.Base.metadata.create_all(bind=database.engine)
 
-webbrowser.open('http://localhost:8000')
 app = FastAPI(
     title="bakasana",
     version="0.0.1",
     description="free webapp/api for operating yoga studios."
 )
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+templates = Jinja2Templates(directory="templates")
 
 
 def get_db():
@@ -27,6 +34,13 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+@app.get("/random", response_class=HTMLResponse)
+async def randomize_names(request: Request):
+    names = ['Gerald', 'Roger', 'Karl', 'Jared', 'Hiren']
+    random.shuffle(names)
+    return templates.TemplateResponse("names.html", {'request': request, 'name_array': names})
 
 
 @app.post("/users/", response_model=schemas.User)

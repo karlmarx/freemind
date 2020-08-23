@@ -24,3 +24,12 @@ class User(database.Base):
     # password = Column(PasswordType)
     dob = Column(Date)
     is_active = Column(Boolean, default=True)
+
+
+class Class(database.Base):
+    __tablename__ = 'class'
+    id = Column(Integer, primary_key=True)
+    classSize = Column(Integer)
+    waitlistSize = Column(Integer)
+    name = Column(Unicode(50))
+    description = Column(Unicode(300))
