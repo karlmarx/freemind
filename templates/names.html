@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Random Names</title>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Allerta+Stencil">
+    <style>
+        .w3-allerta {
+            font-family: 'Allerta Stencil', serif;
+        }
+    </style>
+</head>
+<body>
+<ul class="w3-ul w3-jumbo ">
+    {% for name in name_array %}
+        <li><h1 class="w3-allerta">{{ name }}</h1></li>
+    {% endfor %}
+</ul>
+
+
+{# a comment #}
+</body>
+</html>
