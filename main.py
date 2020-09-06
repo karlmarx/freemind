@@ -111,7 +111,7 @@ async def randomize_names(request: Request):
 
 
 @app.get("/random/{choices}", response_class=HTMLResponse)
-async def randomize_names(request: Request, choices: str):
+async def randomize_choices(request: Request, choices: str):
     choices_list = choices.split(",")
     random.shuffle(choices_list)
     logger.info(f"choices served: {choices}")
