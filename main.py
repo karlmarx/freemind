@@ -152,8 +152,9 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
     return db_user
 
 
-@app.post("/token")
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+#
+# @app.post("/token")
+# async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 
 if __name__ == '__main__':
