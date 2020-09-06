@@ -16,6 +16,7 @@ from starlette.staticfiles import StaticFiles
 from starlette.responses import HTMLResponse
 import aiofiles
 from sqlalchemy.orm import Session
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 import crud
 import schemas
@@ -91,6 +92,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="templates")
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def get_db():
     db = database.SessionLocal()
@@ -108,8 +110,29 @@ async def randomize_names(request: Request):
     return templates.TemplateResponse("names.html", {'request': request, 'name_array': names})
 
 
+@app.get("/random/{choices}", response_class=HTMLResponse)
+async def randomize_names(request: Request, choices: str):
+    choices_list = choices.split(",")
+    random.shuffle(choices_list)
+    logger.info(f"choices served: {choices}")
+    return templates.TemplateResponse("names.html", {'request': request, 'name_array': choices})
+
+
+def fake_decode_token(token):
+    return schemas.User(first_name="karl", last_name="marx", email="fakedecoded" + token)
+
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    user = fake_decode_token(token)
+
+
+@app.get("/users/me", response_model=schemas.User)
+async def get_user_me(current_user: schemas.User = Depends(get_current_user)):
+    return current_user
+
+
 @app.post("/users/", response_model=schemas.User)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered.")
@@ -127,6 +150,10 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
     if db_user is None:
         raise HTTPException(status_code=400, detail="User not found")
     return db_user
+
+
+@app.post("/token")
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 
 if __name__ == '__main__':
