@@ -115,7 +115,7 @@ async def randomize_choices(request: Request, choices: str):
     choices_list = choices.split(",")
     random.shuffle(choices_list)
     logger.info(f"choices served: {choices}")
-    return templates.TemplateResponse("names.html", {'request': request, 'name_array': choices})
+    return templates.TemplateResponse("names.html", {'request': request, 'name_array': choices_list})
 
 
 def fake_decode_token(token):
