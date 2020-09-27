@@ -36,6 +36,11 @@ class User(UserBase):
         use_enum_values = True
 
 
+class UserInDB(User):
+    # better name later.  just to match oauth tutorial
+    password: str
+
+
 class ClassBase(BaseModel):
     # TODO: make a configurable default for this and maybe store in a table?
     classSize: int

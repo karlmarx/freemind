@@ -10,7 +10,7 @@ from loguru._defaults import LOGURU_FORMAT
 
 import uvicorn
 import random
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from starlette.templating import Jinja2Templates
 from starlette.staticfiles import StaticFiles
 from starlette.responses import HTMLResponse
@@ -94,6 +94,28 @@ templates = Jinja2Templates(directory="templates")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+fake_users_db = {
+    "karl@karlmarxindustries.com": {
+        "id": 1,
+        "first_name": "karl",
+        "last_name": "marx",
+        "email": "karl@karlmarxindustries.com",
+        "password": "fakehashedsecret",
+        "is_active": True,
+        "roles": ["student"]
+    },
+    "fengels@karlmarxindustries.com": {
+        "id": 2,
+        "first_name": "friedrich",
+        "full_name": "engels",
+        "email": "fengels@karlmarxindustries.com",
+        "password": "fakehashedsecret2",
+        "is_active": False,
+        "roles": ["student"],
+    },
+}
+
+
 def get_db():
     db = database.SessionLocal()
     try:
@@ -118,17 +140,54 @@ async def randomize_choices(request: Request, choices: str):
     return templates.TemplateResponse("names.html", {'request': request, 'name_array': choices_list})
 
 
+def get_user(db, username: str):
+    if username in db:
+        user_dict = db[username]
+        return schemas.UserInDB(**user_dict)
+
+
 def fake_decode_token(token):
-    return schemas.User(first_name="karl", last_name="marx", email="fakedecoded" + token)
+    user = get_user(fake_users_db, token)
+    return user
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     user = fake_decode_token(token)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    return user
+
+
+async def get_current_active_user(current_user: schemas.User = Depends(get_current_user)):
+    if not current_user.is_active:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
+
+
+def fake_hashed_password(password: str):
+    return "fakehashed" + password
 
 
 @app.get("/users/me", response_model=schemas.User)
 async def get_user_me(current_user: schemas.User = Depends(get_current_user)):
     return current_user
+
+
+@app.post("/token")
+# TODO: add dependency to check creds in db
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    user_dict = fake_users_db.get(form_data.username)
+    if not user_dict:
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+    user = schemas.UserInDB(**user_dict)
+    hashed_password = fake_hashed_password(form_data.password)
+    if not hashed_password == user.password:
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+    return {"access_token": user.email, "token_type": "bearer"}
 
 
 @app.post("/users/", response_model=schemas.User)
