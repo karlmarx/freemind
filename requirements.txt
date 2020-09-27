@@ -14,7 +14,7 @@ ordereddict
 pg8000
 aiofiles~=0.5.0
 jinja2
-
+python-multipart~=0.0.5
 loguru~=0.5.1
 starlette~=0.13.6
 selenium
