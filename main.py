@@ -107,7 +107,7 @@ fake_users_db = {
     "fengels@karlmarxindustries.com": {
         "id": 2,
         "first_name": "friedrich",
-        "full_name": "engels",
+        "last_name": "engels",
         "email": "fengels@karlmarxindustries.com",
         "password": "fakehashedsecret2",
         "is_active": False,
