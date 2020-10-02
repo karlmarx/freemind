@@ -7,7 +7,7 @@ python-dotenv~=0.14.0
 gunicorn
 sqlalchemy_utils
 sqlalchemy_enum_list
-passlib
+passlib~=1.7.2
 email-validator
 psycopg2-binary
 ordereddict
@@ -18,3 +18,4 @@ python-multipart~=0.0.5
 loguru~=0.5.1
 starlette~=0.13.6
 selenium
+python-jose~=3.2.0

@@ -1,10 +1,13 @@
 import webbrowser
-from typing import List
+from datetime import timedelta, datetime
+from typing import List, Optional
 import os
 
 import logging
 import sys
 from pprint import pformat
+
+from jose import jwt, JWTError
 from loguru import logger
 from loguru._defaults import LOGURU_FORMAT
 
@@ -17,11 +20,16 @@ from starlette.responses import HTMLResponse
 import aiofiles
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from passlib.context import CryptContext
 
 import crud
 import schemas
 import models
 import database
+
+SECRET_KEY = "aca9d760c62d927d401d00832197a2b0fd8342f6f742453647b73eb35d318f98"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
 class InterceptHandler(logging.Handler):
@@ -94,13 +102,15 @@ templates = Jinja2Templates(directory="templates")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 fake_users_db = {
     "karl@karlmarxindustries.com": {
         "id": 1,
         "first_name": "karl",
         "last_name": "marx",
         "email": "karl@karlmarxindustries.com",
-        "password": "fakehashedsecret",
+        "hashed_password": "$2b$12$a4xB3.uLILorr2/.MpXoDOTILxC6VbmPFeSkAXIqk4wyIW4C7Uy/u",
         "is_active": True,
         "roles": ["student"]
     },
@@ -109,7 +119,7 @@ fake_users_db = {
         "first_name": "friedrich",
         "last_name": "engels",
         "email": "fengels@karlmarxindustries.com",
-        "password": "fakehashedsecret2",
+        "hashed_password": "$2b$12$a4xB3.uLILorr2/.MpXoDOTILxC6VbmPFeSkAXIqk4wyIW4C7Uy/u",
         "is_active": False,
         "roles": ["student"],
     },
@@ -122,6 +132,40 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def hash_password(password):
+    return pwd_context.hash(password)
+
+
+def get_user(db, username: str):
+    if username in db:
+        user_dict = db[username]
+        return schemas.UserInDB(**user_dict)
+
+
+def authenticate_user(fake_db, username: str, password: str):
+    user = get_user(fake_db, username)
+    if not user:
+        return False
+    if not verify_password(password, user.hashed_password):
+        return False
+    return user
+
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=60)
+    to_encode.update({'exp': expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
 
 
 @app.get("/random", response_class=HTMLResponse)
@@ -140,10 +184,6 @@ async def randomize_choices(request: Request, choices: str):
     return templates.TemplateResponse("names.html", {'request': request, 'name_array': choices_list})
 
 
-def get_user(db, username: str):
-    if username in db:
-        user_dict = db[username]
-        return schemas.UserInDB(**user_dict)
 
 
 def fake_decode_token(token):
@@ -152,13 +192,22 @@ def fake_decode_token(token):
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
-    user = fake_decode_token(token)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"}
-        )
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        token_data = schemas.TokenData(username=username)
+    except JWTError:
+        raise credentials_exception
+    user = get_user(fake_users_db, username=token_data.username)
+    if user is None:
+        raise credentials_exception
     return user
 
 
@@ -173,21 +222,26 @@ def fake_hashed_password(password: str):
 
 
 @app.get("/users/me", response_model=schemas.User)
-async def get_user_me(current_user: schemas.User = Depends(get_current_user)):
+async def get_user_me(current_user: schemas.User = Depends(get_current_active_user)):
     return current_user
 
 
 @app.post("/token")
 # TODO: add dependency to check creds in db
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    user_dict = fake_users_db.get(form_data.username)
-    if not user_dict:
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
-    user = schemas.UserInDB(**user_dict)
-    hashed_password = fake_hashed_password(form_data.password)
-    if not hashed_password == user.password:
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
-    return {"access_token": user.email, "token_type": "bearer"}
+    user = authenticate_user(fake_users_db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.email}, expires_delta=access_token_expires
+    )
+    print(access_token)
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 @app.post("/users/", response_model=schemas.User)

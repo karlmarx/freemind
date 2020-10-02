@@ -38,7 +38,7 @@ class User(UserBase):
 
 class UserInDB(User):
     # better name later.  just to match oauth tutorial
-    password: str
+    hashed_password: str
 
 
 class ClassBase(BaseModel):
@@ -58,6 +58,15 @@ class Class(ClassBase):
 
     class Config:
         orm_mode = True
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: Optional[str] = None
 
 
 class ScheduledClass(BaseModel):
