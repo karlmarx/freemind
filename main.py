@@ -1,4 +1,4 @@
-import webbrowser
+import webbrowser, time
 from datetime import timedelta, datetime
 from typing import List, Optional
 import os
@@ -263,9 +263,13 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
     return db_user
 
 
-#
-# @app.post("/token")
-# async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+@app.middleware("http")
+async def add_processing_time_header(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    response.headers["X-Processing-Time"] = str(process_time)
+    return response
 
 
 if __name__ == '__main__':
