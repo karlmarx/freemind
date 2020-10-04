@@ -1,5 +1,7 @@
 from pydantic import EmailStr
 from sqlalchemy.orm import Session
+
+import main
 import schemas
 import models
 
@@ -17,8 +19,10 @@ def get_users(db: Session, skip: int = 0, limit: int = 100):
 
 
 def create_user(db: Session, user: schemas.UserCreate):
-    fake_hashed_password = user.password + "fake_hash"
-    db_user = models.User(**user.dict())
+    userdict = user.dict()
+    userdict['hashed_password'] = main.pwd_context.hash(user.password)
+    userdict.pop('password', None)
+    db_user = models.User(**userdict)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
