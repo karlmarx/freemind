@@ -16,7 +16,7 @@ class User(database.Base):
     roles = Column(EnumListType(Role, str))
     first_name = Column(Unicode(50))
     last_name = Column(Unicode(50))
-    email = Column(EmailType)
+    email = Column(Unicode(50))
     hashed_password = Column(Unicode(50))
     # password = Column(PasswordType)
     dob = Column(Date)
