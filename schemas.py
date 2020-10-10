@@ -29,8 +29,8 @@ class UserCreate(UserBase):
     password: str
 
 
-class UserUpdate(UserBase):
-    password: Optional[str] = None
+# class UserUpdate(UserBase):
+#     password: Optional[str] = None
 
 
 class UserPatch(BaseModel):

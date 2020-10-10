@@ -228,7 +228,7 @@ async def get_user_me(current_user: schemas.User = Depends(get_current_active_us
 @app.post("/token")
 # TODO: add dependency to check creds in db
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = authenticate_user(db, EmailStr(form_data.username), form_data.password)
+    user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -291,5 +291,5 @@ async def add_processing_time_header(request: Request, call_next):
 
 
 if __name__ == '__main__':
-    # webbrowser.open('http://localhost:8000/docs')
+    webbrowser.open('http://localhost:8000/docs')
     uvicorn.run(app, host="localhost", port=8000)
