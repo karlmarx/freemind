@@ -17,7 +17,7 @@ class User(database.Base):
     first_name = Column(Unicode(50))
     last_name = Column(Unicode(50))
     email = Column(Unicode(50))
-    hashed_password = Column(Unicode(50))
+    hashed_password = Column(Unicode(100))
     # password = Column(PasswordType)
     dob = Column(Date)
     is_active = Column(Boolean, default=True)
