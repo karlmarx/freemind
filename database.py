@@ -49,6 +49,7 @@ def init_connection_engine():
         # reestablished
         "pool_recycle": 1800,  # 30 minutes
         # [END cloud_sql_postgres_sqlalchemy_lifetime]
+        'client_encoding': 'utf8'
     }
 
     if os.environ.get("DB_HOST"):
