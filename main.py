@@ -143,11 +143,11 @@ def hash_password(password):
     return pwd_context.hash(password)
 
 
-def get_user(db, username: EmailStr):
+def get_user(db, username: str):
     return crud.get_user_by_email(db, username)
 
 
-def authenticate_user(db, username: EmailStr, password: str):
+def authenticate_user(db, username: str, password: str):
     user = get_user(db, username)
     if not user:
         return False
