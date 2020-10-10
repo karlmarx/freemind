@@ -143,11 +143,11 @@ def hash_password(password):
     return pwd_context.hash(password)
 
 
-def get_user(db, username: str):
+def get_user(db, username: EmailStr):
     return crud.get_user_by_email(db, username)
 
 
-def authenticate_user(db, username: str, password: str):
+def authenticate_user(db, username: EmailStr, password: str):
     user = get_user(db, username)
     if not user:
         return False
@@ -228,7 +228,7 @@ async def get_user_me(current_user: schemas.User = Depends(get_current_active_us
 @app.post("/token")
 # TODO: add dependency to check creds in db
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = authenticate_user(db, form_data.username, form_data.password)
+    user = authenticate_user(db, EmailStr(form_data.username), form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
