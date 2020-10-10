@@ -16,6 +16,7 @@ class Role(str, Enum):
     staff = "staff"
     student = "student"
 
+
 class UserBase(BaseModel):
     email: EmailStr
     first_name: str
@@ -23,8 +24,22 @@ class UserBase(BaseModel):
     roles: List[Role]
     dob: Optional[date] = None
 
+
 class UserCreate(UserBase):
     password: str
+
+
+class UserUpdate(UserBase):
+    password: Optional[str] = None
+
+
+class UserPatch(BaseModel):
+    email: Optional[EmailStr] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    roles: Optional[List[Role]] = None
+    dob: Optional[date] = None
+    password: Optional[str] = None
 
 
 class User(UserBase):
