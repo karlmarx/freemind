@@ -10,6 +10,7 @@ sqlalchemy_enum_list
 passlib~=1.7.2
 email-validator
 psycopg2-binary
+
 ordereddict
 pg8000
 aiofiles~=0.5.0

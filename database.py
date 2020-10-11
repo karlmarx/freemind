@@ -77,7 +77,7 @@ def init_tcp_connection_engine(db_config):
         # Equivalent URL:
         # postgres+pg8000://<db_user>:<db_pass>@<db_host>:<db_port>/<db_name>
         sqlalchemy.engine.url.URL(
-            drivername="postgres+psycopg2",
+            drivername="postgres+pg8000",
             username=db_user,  # e.g. "my-database-user"
             password=db_pass,  # e.g. "my-database-password"
             host=db_hostname,  # e.g. "127.0.0.1"
@@ -110,7 +110,7 @@ def init_unix_connection_engine(db_config):
         # postgres+pg8000://<db_user>:<db_pass>@/<db_name>
         #                         ?unix_sock=<socket_path>/<cloud_sql_instance_name>/.s.PGSQL.5432
         sqlalchemy.engine.url.URL(
-            drivername="postgres+psycopg2",
+            drivername="postgres+pg8000",
             username=db_user,  # e.g. "my-database-user"
             password=db_pass,  # e.g. "my-database-password"
             database=db_name,  # e.g. "my-database-name"
