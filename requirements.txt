@@ -12,7 +12,7 @@ email-validator
 psycopg2-binary
 
 ordereddict
-pg8000~=1.16.5
+pg8000==1.16.5
 aiofiles~=0.5.0
 jinja2
 python-multipart~=0.0.5
