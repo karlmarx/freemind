@@ -38,3 +38,9 @@ def update_user(db: Session, user_id: int, user_in: schemas.UserPatch):
     db.query(models.User).filter(models.User.id == user_id).update(update_data, synchronize_session=False)
     db.commit()
     return db.query(models.User).filter(models.User.id == user_id).first()
+
+def delete_user(db: Session, user_id: int):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    db.delete(user)
+    db.commit()
+    return True

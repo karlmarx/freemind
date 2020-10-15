@@ -32,6 +32,11 @@ SECRET_KEY = "aca9d760c62d927d401d00832197a2b0fd8342f6f742453647b73eb35d318f98"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
+tags_metadata = [
+    {"name": "User Management", "description": ""},
+    {"name": "Class Management", "description": ""},
+    {"name": "Miscellany", "description": ""},
+]
 
 class InterceptHandler(logging.Handler):
     """
@@ -220,7 +225,7 @@ def fake_hashed_password(password: str):
     return "fakehashed" + password
 
 
-@app.get("/users/me", response_model=schemas.User)
+@app.get("/users/me", response_model=schemas.User, tags=["User Management"])
 async def get_user_me(current_user: schemas.User = Depends(get_current_active_user)):
     return current_user
 
@@ -243,7 +248,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@app.post("/users/", response_model=schemas.User)
+@app.post("/users/", response_model=schemas.User, tags=["User Management"])
 # def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
     db_user = crud.get_user_by_email(db, email=user.email)
@@ -252,7 +257,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db), token: 
     return crud.create_user(db, user)
 
 
-@app.patch("/users/{user_id}", response_model=schemas.User)
+@app.patch("/users/{user_id}", response_model=schemas.User, tags=["User Management"])
 def update_user(user_in: schemas.UserPatch, user_id: int, db: Session = Depends(get_db),
                 token: str = Depends(oauth2_scheme)):
     db_user = crud.get_user(db, user_id=user_id)
@@ -261,6 +266,13 @@ def update_user(user_in: schemas.UserPatch, user_id: int, db: Session = Depends(
     return crud.update_user(db, user_id, user_in)
 
 
+@app.delete("/users/{user_id}", tags=["User Management"], status_code=204)
+def delete_user(user_id: int, db: Session = Depends(get_db),
+                token: str = Depends(oauth2_scheme)):
+    db_user = crud.get_user(db, user_id=user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found.")
+    return
 # @app.put("/users/{user_id}", response_model=schemas.User)
 # def create_user(user_in: schemas.UserUpdate, user_id: int, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
 #     db_user = crud.get_user(db, user_id=user_id)
@@ -269,12 +281,12 @@ def update_user(user_in: schemas.UserPatch, user_id: int, db: Session = Depends(
 #     return crud.update_user(db, db_user, user_in)
 
 
-@app.get("/users/", response_model=List[schemas.User])
+@app.get("/users/", response_model=List[schemas.User], tags=["User Management"])
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return crud.get_users(db, skip=skip, limit=limit)
 
 
-@app.get("/users/{user_id}", response_model=schemas.User)
+@app.get("/users/{user_id}", response_model=schemas.User, tags=["User Management"])
 def read_user(user_id: int, db: Session = Depends(get_db)):
     db_user = crud.get_user(db, user_id=user_id)
     if db_user is None:
