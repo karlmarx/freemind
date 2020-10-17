@@ -33,6 +33,8 @@ steps:
       - pull
       - postman/newman
     id: InstallNewman
+    waitFor:
+      - Deploy
   - name: gcr.io/cloud-builders/docker
     args:
       - run
@@ -41,6 +43,8 @@ steps:
       - run
       - "https://www.postman.com/collections/bc1464f0da93b8a632ad"
     id: RunNewman
+    waitFor:
+      - InstallNewman
 images:
   - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME:$COMMIT_SHA'
 options:
