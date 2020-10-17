@@ -39,8 +39,28 @@ def update_user(db: Session, user_id: int, user_in: schemas.UserPatch):
     db.commit()
     return db.query(models.User).filter(models.User.id == user_id).first()
 
+
 def delete_user(db: Session, user_id: int):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     db.delete(user)
     db.commit()
     return True
+
+
+def get_last_course(db: Session):
+    return db.query(models.Course).order_by(models.Course.id.desc()).first()
+
+
+def update_course(db: Session, course: schemas.Course):
+    coursedict = course.dict()
+    db_course = models.Course(**coursedict)
+    db.add(db_course)
+    db.commit()
+    db.refresh(db_course)
+    return db_course
+
+    # db_user = models.User(**userdict)
+    # db.add(db_user)
+    # db.commit()
+    # db.refresh(db_user)
+    # return db_user
