@@ -17,7 +17,7 @@ from fastapi import Depends, FastAPI, HTTPException, Request, status
 from pydantic import EmailStr
 from starlette.templating import Jinja2Templates
 from starlette.staticfiles import StaticFiles
-from starlette.responses import HTMLResponse
+from starlette.responses import HTMLResponse, JSONResponse
 import aiofiles
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -172,7 +172,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 
-@app.get("/random", response_class=HTMLResponse)
+@app.get("/random", tags=["Miscellaneous"], response_class=HTMLResponse)
 async def randomize_names(request: Request):
     names = ['Gerald', 'Roger', 'Karl', 'Jared', 'Hiren']
     random.shuffle(names)
@@ -180,7 +180,7 @@ async def randomize_names(request: Request):
     return templates.TemplateResponse("names.html", {'request': request, 'name_array': names})
 
 
-@app.get("/random/{choices}", response_class=HTMLResponse)
+@app.get("/random/{choices}", tags=["Miscellaneous"], response_class=HTMLResponse)
 async def randomize_choices(request: Request, choices: str):
     choices_list = choices.split(",")
     random.shuffle(choices_list)
@@ -292,6 +292,19 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
     if db_user is None:
         raise HTTPException(status_code=400, detail="User not found")
     return db_user
+
+
+current_module = ""
+
+
+@app.get("/coursera/current", tags=["Miscellaneous"], response_model=schemas.Course)
+def read_current_course(db: Session = Depends(get_db)):
+    return crud.get_last_course(db)
+
+
+@app.post("/coursera/", tags=["Miscellaneous"], response_model=schemas.Course)
+def update_course(course: schemas.Course, db: Session = Depends(get_db)):
+    return crud.update_course(db, course=course)
 
 
 @app.middleware("http")

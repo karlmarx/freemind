@@ -101,3 +101,11 @@ class ScheduledClass(BaseModel):
     dob = Column(Date)
     is_active = Column(Boolean, default=True)
     """
+
+
+class Course(BaseModel):
+    # id: int
+    courseName: str
+
+    class Config:
+        orm_mode = True
