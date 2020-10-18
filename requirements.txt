@@ -21,3 +21,4 @@ starlette~=0.13.6
 selenium
 python-jose~=3.2.0
 bcrypt~=3.2.0
+google-cloud-logging~=1.15.1
