@@ -7,9 +7,11 @@ import logging
 import sys
 from pprint import pformat
 
+from google.cloud.logging.handlers import CloudLoggingHandler
 from jose import jwt, JWTError
 from loguru import logger
 from loguru._defaults import LOGURU_FORMAT
+import google.cloud.logging
 
 import uvicorn
 import random
@@ -94,6 +96,11 @@ logging.getLogger().handlers = [InterceptHandler()]
 logger.configure(
     handlers=[{"sink": sys.stdout, "level": logging.DEBUG, "format": format_record}]
 )
+
+client = google.cloud.logging.Client()
+handler = CloudLoggingHandler(client)
+cloud_logger = logging.getLogger()
+cloud_logger.addHandler(handler)
 
 models.database.Base.metadata.create_all(bind=database.engine)
 
