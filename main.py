@@ -325,7 +325,7 @@ async def log_with_processing_time(request: Request, call_next):
 
     process_time = (time.time() - start_time) * 1000
     formatted_process_time = '{0:.2f}'.format(process_time)
-    logger.info(f"rid={idem} completed_in={formatted_process_time}ms status_code={response.status_code}")
+    logger.success(f"rid={idem} completed_in={formatted_process_time}ms status_code={response.status_code}")
     response.headers["X-Processing-Time"] = formatted_process_time
     return response
 
