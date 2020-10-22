@@ -5,10 +5,12 @@ from typing import List, Optional
 import os
 
 import logging
+from gunicorn.app.base import BaseApplication
 import sys
 from pprint import pformat
 
 from google.cloud.logging.handlers import CloudLoggingHandler
+from gunicorn.glogging import Logger
 from jose import jwt, JWTError
 from loguru import logger
 from loguru._defaults import LOGURU_FORMAT
@@ -41,6 +43,11 @@ tags_metadata = [
     {"name": "Miscellany", "description": ""},
 ]
 
+LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
+JSON_LOGS = True if os.environ.get("JSON_LOGS", "0") == "1" else False
+WORKERS = int(os.environ.get("GUNICORN_WORKERS", "5"))
+
+
 class InterceptHandler(logging.Handler):
     """
     Default handler from examples in loguru documentaion.
@@ -63,6 +70,37 @@ class InterceptHandler(logging.Handler):
         logger.opt(depth=depth, exception=record.exc_info).log(
             level, record.getMessage()
         )
+
+
+class StubbedGunicornLogger(Logger):
+    def setup(self, cfg):
+        handler = logging.NullHandler()
+        self.error_logger = logging.getLogger("gunicorn.error")
+        self.error_logger.addHandler(handler)
+        self.access_logger = logging.getLogger("gunicorn.access")
+        self.access_logger.addHandler(handler)
+        self.error_logger.setLevel(LOG_LEVEL)
+        self.access_logger.setLevel(LOG_LEVEL)
+
+
+class StandaloneApplication(BaseApplication):
+    """Our Gunicorn application."""
+
+    def __init__(self, app, options=None):
+        self.options = options or {}
+        self.application = app
+        super().__init__()
+
+    def load_config(self):
+        config = {
+            key: value for key, value in self.options.items()
+            if key in self.cfg.settings and value is not None
+        }
+        for key, value in config.items():
+            self.cfg.set(key.lower(), value)
+
+    def load(self):
+        return self.application
 
 
 def format_record(record: dict) -> str:
@@ -331,5 +369,33 @@ async def log_with_processing_time(request: Request, call_next):
 
 
 if __name__ == '__main__':
+    intercept_handler = InterceptHandler()
+    # logging.basicConfig(handlers=[intercept_handler], level=LOG_LEVEL)
+    # logging.root.handlers = [intercept_handler]
+    logging.root.setLevel(LOG_LEVEL)
+    seen = set()
+    for name in [
+        *logging.root.manager.loggerDict.keys(),
+        "gunicorn",
+        "gunicorn.access",
+        "gunicorn.error",
+        "uvicorn",
+        "uvicorn.access",
+        "uvicorn.error",
+    ]:
+        if name not in seen:
+            seen.add(name.split(".")[0])
+            logging.getLogger(name).handlers = [intercept_handler]
     # webbrowser.open('http://localhost:8000/docs')
-    uvicorn.run(app, host="localhost", port=8000)
+    logger.configure(handlers=[{"sink": sys.stdout, "serialize": JSON_LOGS}])
+    options = {
+        "bind": "0.0.0.0",
+        "workers": WORKERS,
+        "accesslog": "-",
+        "errorlog": "-",
+        "worker_class": "uvicorn.workers.UvicornWorker",
+        "logger_class": StubbedGunicornLogger
+    }
+
+    StandaloneApplication(app, options).run()
+    # uvicorn.run(app, host="localhost", port=8000)

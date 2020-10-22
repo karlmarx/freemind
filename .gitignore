@@ -13,4 +13,6 @@ __pycache__/
 app.standard.yaml
 docker-compose.yml
 creds.json
-!/credentials.json
+credentials.json
+*.log
+spam.log
