@@ -93,7 +93,8 @@ class StandaloneApplication(BaseApplication):
 
     def load_config(self):
         config = {
-            key: value for key, value in self.options.items()
+            key: value
+            for key, value in self.options.items()
             if key in self.cfg.settings and value is not None
         }
         for key, value in config.items():
@@ -110,7 +111,15 @@ def format_record(record: dict) -> str:
     Works with logging if loguru handler it.
 
     Example:
-    >>> payload = [{"users":[{"name": "Nick", "age": 87, "is_active": True}, {"name": "Alex", "age": 27, "is_active": True}], "count": 2}]
+    >>> payload = [
+    >>> {
+    >>>     "users": [
+    >>>         {"name": "Nick", "age": 87, "is_active": True},
+    >>>         {"name": "Alex", "age": 27, "is_active": True},
+    >>>     ],
+    >>>     "count": 2,
+    >>> }
+    >>> ]
     >>> logger.bind(payload=).debug("users payload")
     >>> [   {   'count': 2,
     >>>         'users': [   {'age': 87, 'is_active': True, 'name': 'Nick'},
@@ -133,7 +142,9 @@ logging.getLogger().handlers = [InterceptHandler()]
 
 # set format
 logger.configure(
-    handlers=[{"sink": sys.stdout, "level": logging.DEBUG, "format": format_record}]
+    handlers=[
+        {"sink": sys.stdout, "level": logging.DEBUG, "format": format_record}
+    ]
 )
 
 client = google.cloud.logging.Client()
@@ -146,7 +157,7 @@ models.database.Base.metadata.create_all(bind=database.engine)
 app = FastAPI(
     title="bakasana",
     version="0.0.1",
-    description="free webapp/api for yoga studios operational management."
+    description="free webapp/api for yoga studios operational management.",
 )
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -164,7 +175,7 @@ fake_users_db = {
         "email": "karl@karlmarxindustries.com",
         "hashed_password": "$2b$12$a4xB3.uLILorr2/.MpXoDOTILxC6VbmPFeSkAXIqk4wyIW4C7Uy/u",
         "is_active": True,
-        "roles": ["student"]
+        "roles": ["student"],
     },
     "fengels@karlmarxindustries.com": {
         "id": 2,
@@ -213,27 +224,31 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=60)
-    to_encode.update({'exp': expire})
+    to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
 @app.get("/random", tags=["Miscellaneous"], response_class=HTMLResponse)
 async def randomize_names(request: Request):
-    names = ['Gerald', 'Roger', 'Karl', 'Jared', 'Hiren']
+    names = ["Gerald", "Roger", "Karl", "Jared", "Hiren"]
     random.shuffle(names)
     logger.info("names served")
-    return templates.TemplateResponse("names.html", {'request': request, 'name_array': names})
+    return templates.TemplateResponse(
+        "names.html", {"request": request, "name_array": names}
+    )
 
 
-@app.get("/random/{choices}", tags=["Miscellaneous"], response_class=HTMLResponse)
+@app.get(
+    "/random/{choices}", tags=["Miscellaneous"], response_class=HTMLResponse
+)
 async def randomize_choices(request: Request, choices: str):
     choices_list = choices.split(",")
     random.shuffle(choices_list)
     logger.info(f"choices served: {choices}")
-    return templates.TemplateResponse("names.html", {'request': request, 'name_array': choices_list})
-
-
+    return templates.TemplateResponse(
+        "names.html", {"request": request, "name_array": choices_list}
+    )
 
 
 def fake_decode_token(token):
@@ -241,7 +256,9 @@ def fake_decode_token(token):
     return user
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+async def get_current_user(
+    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -261,7 +278,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     return user
 
 
-async def get_current_active_user(current_user: schemas.User = Depends(get_current_user)):
+async def get_current_active_user(
+    current_user: schemas.User = Depends(get_current_user),
+):
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
@@ -272,13 +291,18 @@ def fake_hashed_password(password: str):
 
 
 @app.get("/users/me", response_model=schemas.User, tags=["User Management"])
-async def get_user_me(current_user: schemas.User = Depends(get_current_active_user)):
+async def get_user_me(
+    current_user: schemas.User = Depends(get_current_active_user),
+):
     return current_user
 
 
 @app.post("/token")
 # TODO: add dependency to check creds in db
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+async def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db),
+):
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -296,16 +320,26 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
 
 @app.post("/users/", response_model=schemas.User, tags=["User Management"])
 # def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+def create_user(
+    user: schemas.UserCreate,
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme),
+):
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered.")
     return crud.create_user(db, user)
 
 
-@app.patch("/users/{user_id}", response_model=schemas.User, tags=["User Management"])
-def update_user(user_in: schemas.UserPatch, user_id: int, db: Session = Depends(get_db),
-                token: str = Depends(oauth2_scheme)):
+@app.patch(
+    "/users/{user_id}", response_model=schemas.User, tags=["User Management"]
+)
+def update_user(
+    user_in: schemas.UserPatch,
+    user_id: int,
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme),
+):
     db_user = crud.get_user(db, user_id=user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found.")
@@ -313,14 +347,24 @@ def update_user(user_in: schemas.UserPatch, user_id: int, db: Session = Depends(
 
 
 @app.delete("/users/{user_id}", tags=["User Management"], status_code=204)
-def delete_user(user_id: int, db: Session = Depends(get_db),
-                token: str = Depends(oauth2_scheme)):
+def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme),
+):
     db_user = crud.get_user(db, user_id=user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found.")
     return
+
+
 # @app.put("/users/{user_id}", response_model=schemas.User)
-# def create_user(user_in: schemas.UserUpdate, user_id: int, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+# def create_user(
+#     user_in: schemas.UserUpdate,
+#     user_id: int,
+#     db: Session = Depends(get_db),
+#     token: str = Depends(oauth2_scheme),
+# ):
 #     db_user = crud.get_user(db, user_id=user_id)
 #     if db_user is None:
 #         raise HTTPException(status_code=404, detail="User not found.")
@@ -332,7 +376,9 @@ def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return crud.get_users(db, skip=skip, limit=limit)
 
 
-@app.get("/users/{user_id}", response_model=schemas.User, tags=["User Management"])
+@app.get(
+    "/users/{user_id}", response_model=schemas.User, tags=["User Management"]
+)
 def read_user(user_id: int, db: Session = Depends(get_db)):
     db_user = crud.get_user(db, user_id=user_id)
     if db_user is None:
@@ -343,7 +389,9 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
 current_module = ""
 
 
-@app.get("/coursera/current", tags=["Miscellaneous"], response_model=schemas.Course)
+@app.get(
+    "/coursera/current", tags=["Miscellaneous"], response_model=schemas.Course
+)
 def read_current_course(db: Session = Depends(get_db)):
     return crud.get_last_course(db)
 
@@ -355,20 +403,24 @@ def update_course(course: schemas.Course, db: Session = Depends(get_db)):
 
 @app.middleware("http")
 async def log_with_processing_time(request: Request, call_next):
-    idem = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    idem = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
     logger.info(f"rid={idem} start request path={request.url.path}")
     start_time = time.time()
 
     response = await call_next(request)
 
     process_time = (time.time() - start_time) * 1000
-    formatted_process_time = '{0:.2f}'.format(process_time)
-    logger.success(f"rid={idem} completed_in={formatted_process_time}ms status_code={response.status_code}")
+    formatted_process_time = "{0:.2f}".format(process_time)
+    logger.success(
+        f"rid={idem} \
+          completed_in={formatted_process_time}ms \
+          status_code={response.status_code}"
+    )
     response.headers["X-Processing-Time"] = formatted_process_time
     return response
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     intercept_handler = InterceptHandler()
     # logging.basicConfig(handlers=[intercept_handler], level=LOG_LEVEL)
     # logging.root.handlers = [intercept_handler]
@@ -394,7 +446,7 @@ if __name__ == '__main__':
         "accesslog": "-",
         "errorlog": "-",
         "worker_class": "uvicorn.workers.UvicornWorker",
-        "logger_class": StubbedGunicornLogger
+        "logger_class": StubbedGunicornLogger,
     }
 
     StandaloneApplication(app, options).run()
