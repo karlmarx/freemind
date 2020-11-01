@@ -41,8 +41,8 @@ class User(database.Base):
         "last_modified", DateTime, onupdate=datetime.now, default=datetime.now()
     )
 
-    teaching_schedule = relationship("scheduled_class", back_populates="teacher")
-    student_schedule = relationship("scheduled_class", secondary="student_roster", back_populates="scheduled_students")
+    teaching_schedule = relationship("ScheduledClass", back_populates="teacher")
+    student_schedule = relationship("ScheduledClass", secondary="student_roster", back_populates="scheduled_students")
 
 
 class Class(database.Base):
@@ -68,9 +68,9 @@ class ScheduledClass(database.Base):
     start_time = Column(DateTime)
     end_time = Column(DateTime)
 
-    teacher = relationship("users", back_populates="teaching_schedule")
+    teacher = relationship("User", back_populates="teaching_schedule")
     # class_template = relationship("class", back_populates="teaching_schedule")
-    scheduled_students = relationship("users", secondary="student_roster", back_populates="student_schedule")
+    scheduled_students = relationship("User", secondary="student_roster", back_populates="student_schedule")
 
 
 class Course(database.Base):
