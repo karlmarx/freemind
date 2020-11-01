@@ -6,7 +6,7 @@ from sqlalchemy_utils import EmailType
 from datetime import date, time, timedelta
 from enum import Enum, IntEnum
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class Role(str, Enum):
@@ -49,6 +49,19 @@ class User(UserBase):
     class Config:
         orm_mode = True
         use_enum_values = True
+        schema_extra = {
+            "example": {
+                "id": 123456,
+                "first_name": "Sven",
+                "last_name": "Svensson",
+                "email": "sven.svensson@example.com",
+                "dob": "2020-11-01",
+                "roles": [
+                    "owner"
+                ],
+                "is_active": True,
+            }
+        }
 
 
 class UserInDB(User):
@@ -58,7 +71,7 @@ class UserInDB(User):
 
 class ClassBase(BaseModel):
     # TODO: make a configurable default for this and maybe store in a table?
-    classSize: int
+    classSize: int = Field(..., gt=0, description="The class size must be greater than zero")
     waitlistSize: Optional[int] = 0
     name: str
     description: Optional[str] = ""
