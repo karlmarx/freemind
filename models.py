@@ -10,7 +10,7 @@ from sqlalchemy import (
     Unicode,
     Date,
     DateTime,
-    func,
+    func, Table, PrimaryKeyConstraint,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy_enum_list import EnumListType
@@ -19,6 +19,11 @@ from sqlalchemy.orm import relationship
 import database
 from schemas import Role
 
+student_roster_table = Table('student_roster', database.Base.metadata,
+                             Column('user_id', Integer, ForeignKey('users.id'), nullable=False),
+                             Column('scheduled_class_id', Integer, ForeignKey('scheduled_class.id'), nullable=False),
+                             PrimaryKeyConstraint('user_id', 'scheduled_class_id')
+                             )
 
 # db models
 class User(database.Base):
@@ -36,6 +41,9 @@ class User(database.Base):
         "last_modified", DateTime, onupdate=datetime.now, default=datetime.now()
     )
 
+    teaching_schedule = relationship("scheduled_class", back_populates="teacher")
+    student_schedule = relationship("scheduled_class", secondary="student_roster", back_populates="scheduled_students")
+
 
 class Class(database.Base):
     __tablename__ = "class"
@@ -47,6 +55,22 @@ class Class(database.Base):
     last_modified = Column(
         "last_modified", DateTime, onupdate=datetime.now, default=datetime.now()
     )
+
+
+class ScheduledClass(database.Base):
+    __tablename__ = "scheduled_class"
+    id = Column(Integer, primary_key=True)
+    teacher_id = Column(Integer, ForeignKey("users.id"))
+    class_id = Column(Integer, ForeignKey("class.id"))
+    last_modified = Column(
+        "last_modified", DateTime, onupdate=datetime.now, default=datetime.now()
+    )
+    start_time = Column(DateTime)
+    end_time = Column(DateTime)
+
+    teacher = relationship("users", back_populates="teaching_schedule")
+    # class_template = relationship("class", back_populates="teaching_schedule")
+    scheduled_students = relationship("users", secondary="student_roster", back_populates="student_schedule")
 
 
 class Course(database.Base):

@@ -401,6 +401,21 @@ def update_course(course: schemas.Course, db: Session = Depends(get_db)):
     return crud.update_course(db, course=course)
 
 
+@app.get("/classes/", response_model=List[schemas.Class], tags=["Class Management"])
+def read_classes(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud.get_classes(db, skip=skip, limit=limit)
+
+
+@app.get(
+    "/classes/{class_id}", response_model=schemas.Class, tags=["Class Management"]
+)
+def read_class(class_id: int, db: Session = Depends(get_db)):
+    db_class = crud.get_class(db, user_id=class_id)
+    if db_class is None:
+        raise HTTPException(status_code=400, detail="Class not found")
+    return db_class
+
+
 @app.middleware("http")
 async def log_with_processing_time(request: Request, call_next):
     idem = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))

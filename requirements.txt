@@ -4,7 +4,7 @@ pydantic~=1.6.1
 fastapi~=0.61.0
 uvicorn~=0.11.8
 python-dotenv~=0.14.0
-gunicorn
+gunicorn~=20.0.4
 sqlalchemy_utils
 sqlalchemy_enum_list
 passlib~=1.7.2
@@ -22,3 +22,6 @@ selenium
 python-jose~=3.2.0
 bcrypt~=3.2.0
 google-cloud-logging~=1.15.1
+google~=3.0.0
+pytest~=6.1.1
+pytest_asyncio~=0.14.0

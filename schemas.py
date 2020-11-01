@@ -84,9 +84,22 @@ class TokenData(BaseModel):
     username: Optional[str] = None
 
 
-class ScheduledClass(BaseModel):
+class ScheduledClassBase(BaseModel):
     startTime: time
+    teacher: User = None
+    classType: Class = None
+
+
+class ScheduledClassCreate(ScheduledClassBase):
     duration: Optional[timedelta] = timedelta(minutes=60)
+
+
+class ScheduledClass(ScheduledClassBase):
+    endTime: time
+    scheduled_students: List[User] = []
+
+    class Config:
+        orm_mode = True
 
     """
     roles : List(Role)

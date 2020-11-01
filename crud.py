@@ -61,6 +61,14 @@ def update_course(db: Session, course: schemas.Course):
     db.refresh(db_course)
     return db_course
 
+
+def get_class(db: Session, class_id: int):
+    return db.query(models.Class).filter(models.Class.id == class_id).first()
+
+
+def get_classes(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Class).offset(skip).limit(limit).all()
+
     # db_user = models.User(**userdict)
     # db.add(db_user)
     # db.commit()
