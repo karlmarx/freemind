@@ -69,6 +69,19 @@ def get_class(db: Session, class_id: int):
 def get_classes(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Class).offset(skip).limit(limit).all()
 
+
+def get_class_by_name(db: Session, name: str):
+    return db.query(models.Class).filter(models.Class.name == name).first()
+
+
+def create_class(db: Session, classType: schemas.ClassCreate):
+    classdict = classType.dict()
+    db_class = models.Class(**classdict)
+    db.add(db_class)
+    db.commit()
+    db.refresh(db_class)
+    return db_class
+
     # db_user = models.User(**userdict)
     # db.add(db_user)
     # db.commit()

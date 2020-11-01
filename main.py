@@ -156,7 +156,7 @@ models.database.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(
     title="bakasana",
-    version="0.0.1",
+    version="0.1.2",
     description="free webapp/api for yoga studios operational management.",
 )
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -319,7 +319,6 @@ async def login(
 
 
 @app.post("/users/", response_model=schemas.User, tags=["User Management"])
-# def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 def create_user(
     user: schemas.UserCreate,
     db: Session = Depends(get_db),
@@ -415,6 +414,34 @@ def read_class(class_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Class not found")
     return db_class
 
+
+@app.post(
+    "classes", response_model=schemas.Class, tags=["Class Management"]
+)
+def create_class(
+        class_type: schemas.ClassCreate,
+        db: Session = Depends(get_db),
+        token: str = Depends(oauth2_scheme),
+):
+    db_class = crud.get_class_by_name(db, name=class_type.name)
+    if class_type.classSize < 1:
+        raise HTTPException(status_code=400, detail="Class size must be 1 or greater")
+    if db_class:
+        raise HTTPException(status_code=409, detail="Please choose a unique class name")
+    return crud.create_class(db, class_type)
+
+
+# @app.post("/users/", response_model=schemas.User, tags=["User Management"])
+# # def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+# def create_user(
+#     user: schemas.UserCreate,
+#     db: Session = Depends(get_db),
+#     token: str = Depends(oauth2_scheme),
+# ):
+#     db_user = crud.get_user_by_email(db, email=user.email)
+#     if db_user:
+#         raise HTTPException(status_code=400, detail="Email already registered.")
+#     return crud.create_user(db, user)
 
 @app.middleware("http")
 async def log_with_processing_time(request: Request, call_next):
