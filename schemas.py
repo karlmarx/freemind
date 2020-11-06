@@ -87,6 +87,16 @@ class Class(ClassBase):
     class Config:
         orm_mode = True
 
+        schema_extra = {
+            "example": {
+                "id": 108,
+                "name": "string",
+                "description": "string",
+                "classSize": 0,
+                "waitlistSize": 0,
+            }
+        }
+
 
 class Token(BaseModel):
     access_token: str
