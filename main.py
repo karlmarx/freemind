@@ -416,7 +416,7 @@ def read_class(class_id: int, db: Session = Depends(get_db)):
 
 
 @app.post(
-    "classes", response_model=schemas.Class, tags=["Class Management"]
+    "/classes/", response_model=schemas.Class, tags=["Class Management"]
 )
 def create_class(
         class_type: schemas.ClassCreate,
