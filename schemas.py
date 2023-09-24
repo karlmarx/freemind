@@ -10,7 +10,7 @@ from pydantic import BaseModel, EmailStr, Field
 
 
 class Role(str, Enum):
-    owner = "owner"
+    owner = "babyKarlIsTheKing"
     admin = "admin"
     teacher = "teacher"
     staff = "staff"
